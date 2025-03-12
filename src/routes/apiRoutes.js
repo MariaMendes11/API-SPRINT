@@ -1,32 +1,32 @@
-// Importa o módulo Router do express
-// Router será  utiliziado para definir rotas específicas da aplicação
-const router = require('express').Router();
+const router = require("express").Router();
 
-// Importa a controller onde contém a lógica relacionada a professores
-const userController = require("../controllers/userController");
-const reservaController = require("../controllers/reservaController");
-const salasController = require("../controllers/salasController");
+const userController = require("../controller/userController");
+const classroomController = require("../controller/classroomController");
+const scheduleController = require("../controller/scheduleController");
 
-// Rotas Para userController
-router.post('/user', userController.createUser);
-router.post('/login', userController.loginUser);
-// Rotas alternativas da CONTROLLER DE USUARIOS
-router.delete('/user/:id', userController.deleteUser);
-router.get('/user', userController.getAllUsers);
-router.put('/user', userController.updateUser);
-router.get('/user/:id', userController.getUserById);
+//User
+router.post("/user/", userController.createUser);
+router.post("/user/login", userController.postLogin);
+router.get("/user/", userController.getAllUsers);
+router.get("/user/:id", userController.getUserById);
+router.put("/user/:id", userController.updateUser);
+router.delete("/user/:id", userController.deleteUser);
 
-// Rotas Para reservaController
-router.post("/reservas", reservaController.createReserva);
-router.get("/reservas", reservaController.getReservas); 
-router.get("/reservas/user/:id_usuario", reservaController.getReservasByUser); // Obter reservas de um usuário específico
-router.put("/reservas", reservaController.updateReserva);
-router.delete("/reservas/:id_reserva", reservaController.deleteReserva); 
+//Classroom
+router.post("/classroom/", classroomController.createClassroom);
+router.get("/classroom/", classroomController.getAllClassrooms);
+router.get("/classroom/:number", classroomController.getClassroomById);
+router.put("/classroom/", classroomController.updateClassroom);
+router.delete("/classroom/:number", classroomController.deleteClassroom);
 
-// Rotas Para salasController
-router.post("/salas", salasController.createSala);
-router.get("/salas", salasController.getAllSalas);
-router.put("/salas", salasController.updateSala);
-router.delete("/salas/:id", salasController.deleteSala);
+//Schedule
+router.post("/schedule/", scheduleController.createSchedule);
+router.get("/schedule/", scheduleController.getAllSchedules);
+router.get("/schedule/:id", scheduleController.getSchedulesByIdClassroom);
+router.get(
+  "/schedule/ranges/:id",
+  scheduleController.getSchedulesByIdClassroomRanges
+);
+router.delete("/schedule/:id", scheduleController.deleteSchedule);
 
-module.exports = router
+module.exports = router;

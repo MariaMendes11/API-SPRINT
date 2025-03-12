@@ -1,8 +1,7 @@
 const connect = require("../db/connect");
-
-module.exports = class controladorDeSalas {
-  static async criarSala(req, res) {
-    const { nome, disponibilidade, bloco } = req.body;
+module.exports = class classroomController {
+  static async createClassroom(req, res) {
+    const { nome, disponibilidade , bloco } = req.body;
 
     // Verifica se todos os campos estão preenchidos
     if (!nome || !disponibilidade || !bloco) {
@@ -12,7 +11,7 @@ module.exports = class controladorDeSalas {
     }
 
     // Caso todos os campos estejam preenchidos, realiza a inserção na tabela
-    const query = `INSERT INTO sala (nome, disponibilidade, bloco) VALUES ( 
+    const query = `INSERT INTO classroom (nome, disponibilidade, bloco) VALUES ( 
         '${nome}', 
         '${disponibilidade}', 
         '${bloco}'
@@ -34,16 +33,16 @@ module.exports = class controladorDeSalas {
     }
   }
 
-  static async obterTodasAsSalas(req, res) {
+  static async getAllClassrooms(req, res) {
     try {
-      const query = "SELECT * FROM sala";
+      const query = "SELECT * FROM classroom";
       connect.query(query, function (err, result) {
         if (err) {
           console.error("Erro ao obter salas:", err);
           return res.status(500).json({ error: "Erro interno do servidor" });
         }
         console.log("Salas obtidas com sucesso");
-        res.status(200).json({ salas: result });
+        res.status(200).json({ classrooms: result });
       });
     } catch (error) {
       console.error("Erro ao executar a consulta:", error);
@@ -51,11 +50,11 @@ module.exports = class controladorDeSalas {
     }
   }
 
-  static async obterSalaPorId(req, res) {
-    const idSala = req.params.numero;
+  static async getClassroomById(req, res) {
+    const classroomId = req.params.number;
 
     try {
-      const query = `SELECT * FROM sala WHERE numero = '${idSala}'`;
+      const query = `SELECT * FROM classroom WHERE number = '${classroomId}'`;
       connect.query(query, function (err, result) {
         if (err) {
           console.error("Erro ao obter sala:", err);
@@ -68,8 +67,8 @@ module.exports = class controladorDeSalas {
 
         console.log("Sala obtida com sucesso");
         res.status(200).json({
-          message: "Obtendo a sala com ID: " + idSala,
-          sala: result[0],
+          message: "Obtendo a sala com ID: " + classroomId,
+          classroom: result[0],
         });
       });
     } catch (error) {
@@ -78,7 +77,7 @@ module.exports = class controladorDeSalas {
     }
   }
 
-  static async atualizarSala(req, res) {
+  static async updateClassroom(req, res) {
     const { nome, disponibilidade, bloco } = req.body;
 
     // Validar campos obrigatórios
@@ -90,7 +89,7 @@ module.exports = class controladorDeSalas {
 
     try {
       // Verificar se a sala existe
-      const findQuery = `SELECT * FROM sala WHERE nome = ?`;
+      const findQuery = `SELECT * FROM classroom WHERE nome = ?`;
       connect.query(findQuery, [nome], function (err, result) {
         if (err) {
           console.error("Erro ao buscar a sala:", err);
@@ -104,7 +103,7 @@ module.exports = class controladorDeSalas {
         // Atualizar a sala
         const updateQuery = `
               UPDATE sala 
-              SET disponibilidade = ?, bloco = ?
+              SET disponobilidade = ?, bloco = ?
               WHERE nome = ?
           `;
         connect.query(
@@ -129,22 +128,22 @@ module.exports = class controladorDeSalas {
     }
   }
 
-  static async deletarSala(req, res) {
-    const idSala = req.params.numero;
+  static async deleteClassroom(req, res) {
+    const classroomId = req.params.number;
     try {
       // Verificar se há reservas associadas à sala
-      const checkReservationsQuery = `SELECT * FROM agendamento WHERE sala = ?`;
+      const checkReservationsQuery = `SELECT * FROM schedule WHERE classroom = ?`;
       connect.query(
         checkReservationsQuery,
-        [idSala],
-        function (err, reservas) {
+        [classroomId],
+        function (err, reservations) {
           if (err) {
             console.error("Erro ao verificar reservas:", err);
             return res.status(500).json({ error: "Erro interno do servidor" });
           }
 
           // Verificar se existem reservas associadas
-          if (reservas.length > 0) {
+          if (reservations.length > 0) {
             // Impedir exclusão e retornar erro
             return res
               .status(400)
@@ -153,9 +152,9 @@ module.exports = class controladorDeSalas {
                   "Não é possível excluir a sala, pois há reservas associadas.",
               });
           } else {
-            // Deletar a sala
-            const deleteQuery = `DELETE FROM sala WHERE numero = ?`;
-            connect.query(deleteQuery, [idSala], function (err, result) {
+            // Deletar a sala de aula
+            const deleteQuery = `DELETE FROM classroom WHERE number = ?`;
+            connect.query(deleteQuery, [classroomId], function (err, result) {
               if (err) {
                 console.error("Erro ao deletar a sala:", err);
                 return res
