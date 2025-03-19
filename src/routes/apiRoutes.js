@@ -1,32 +1,31 @@
-const router = require("express").Router();
+const express = require('express');
+const router = express.Router();
+const UserController = require("../controllers/UserController");
+const SalaController = require("../controllers/SalaController");
+const reservaController = require("../controllers/reservaController"); 
 
-const userController = require("../controller/userController");
-const classroomController = require("../controller/classroomController");
-const scheduleController = require("../controller/scheduleController");
+// Rotas da UserController
+router.post('/user', UserController.createUser); // http://localhost:5000/api/v1/user
+router.post('/userLogin', UserController.loginUser); // http://localhost:5000/api/v1/userLogin
+router.put('/user', UserController.updateUser); // http://localhost:5000/api/v1/user
+router.delete('/user/:id', UserController.deleteUser); // http://localhost:5000/api/v1/user/:id
+router.get('/user', UserController.getAllUsers); // http://localhost:5000/api/v1/user
 
-//User
-router.post("/user/", userController.createUser);
-router.post("/user/login", userController.postLogin);
-router.get("/user/", userController.getAllUsers);
-router.get("/user/:id", userController.getUserById);
-router.put("/user/:id", userController.updateUser);
-router.delete("/user/:id", userController.deleteUser);
+// Rotas da SalaController
+router.get("/sala", SalaController.getAllSalas); // http://localhost:5000/api/v1/sala
+router.get("/blocoA", SalaController.getAllSalasA);// http://localhost:5000/api/v1/blocoA
+router.get("/blocoB", SalaController.getAllSalasB);// http://localhost:5000/api/v1/blocoB
+router.get("/blocoC", SalaController.getAllSalasC);// http://localhost:5000/api/v1/blocoC
+router.get("/blocoD", SalaController.getAllSalasD);// http://localhost:5000/api/v1/blocoD
+router.post("/sala", SalaController.createSalas); // http://localhost:5000/api/v1/sala
+router.put("/sala/:id_sala", SalaController.updateSala); // http://localhost:5000/api/v1/sala/:id
+router.delete("/sala/:id_sala", SalaController.deleteSala); // http://localhost:5000/api/v1/sala/:id
 
-//Classroom
-router.post("/classroom/", classroomController.createClassroom);
-router.get("/classroom/", classroomController.getAllClassrooms);
-router.get("/classroom/:number", classroomController.getClassroomById);
-router.put("/classroom/", classroomController.updateClassroom);
-router.delete("/classroom/:number", classroomController.deleteClassroom);
-
-//Schedule
-router.post("/schedule/", scheduleController.createSchedule);
-router.get("/schedule/", scheduleController.getAllSchedules);
-router.get("/schedule/:id", scheduleController.getSchedulesByIdClassroom);
-router.get(
-  "/schedule/ranges/:id",
-  scheduleController.getSchedulesByIdClassroomRanges
-);
-router.delete("/schedule/:id", scheduleController.deleteSchedule);
+// Rotas do reservaController
+router.post('/reserva', reservaController.createReserva); // http://localhost:5000/api/v1/reserva
+router.put("/reserva/:id", reservaController.updateReserva); // http://localhost:5000/api/v1/reserva/:id
+router.delete('/reserva/:id', reservaController.deleteReserva); // http://localhost:5000/api/v1/reserva/:id
+router.get('/reserva', reservaController.getAllReserva); // http://localhost:5000/api/v1/reserva
+router.get('/reserva/:id', reservaController.getReservaByUsuario); // http://localhost:5000/api/v1/reserva/:id
 
 module.exports = router;

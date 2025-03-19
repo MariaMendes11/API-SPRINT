@@ -1,24 +1,29 @@
-const express = require('express')
-const cors = require('cors');
-const testConnect = require('./db/testeConnect')
+const express = require("express"); //Importa o módulo Express
+
+const testConnect = require('./db/testConnect');
+
+const cors = require("cors");
 
 class AppController {
-    constructor() {
-      this.express = express();
-      this.middlewares();
-      this.routes();
-      testConnect();
-    }
-
-    middlewares() {
-      this.express.use(express.json());
-      this.express.use(cors());
-    }
-
-    routes() {
-      const apiRoutes= require('./routes/apiRoutes');
-      this.express.use('/api/reservas/v1/', apiRoutes);
-    }
+  //Define uma classe para organizar a lógica da aplicação
+  constructor() {
+    this.express = express(); //Cria uma nova instância do Express dentro da classe
+    this.middlewares(); //Chama o método middlewares para configurar os middlewares
+    this.routes(); //Chama o método routes para definir as rotas da API
+    testConnect();
   }
 
-  module.exports = new AppController().express;
+  middlewares() {
+    //Permite que a aplicação receba dados no formato JSON nas requisições
+    this.express.use(express.json());
+    this.express.use(cors());
+  }
+
+  routes() {
+    const apiRoutes= require('./routes/apiRoutes')
+    this.express.use('/api/v1/',apiRoutes);// Definição da URL Base
+  }
+}
+
+//Exporta a instância do Express configurada, tornando-a acessível em outros arquivos
+module.exports = new AppController().express;
