@@ -197,14 +197,6 @@ module.exports = class reservaController {
         });
       }
 
-      // Verifica se o tempo de reserva excede 1 hora
-      const limiteHora = 60 * 60 * 1000; // 1 hora em milissegundos
-      if (new Date(datahora_fim) - new Date(datahora_inicio) > limiteHora) {
-        return res
-          .status(400)
-          .json({ error: "O tempo de reserva excede o limite (1h)" });
-      }
-
       // Executa a consulta para atualizar a reserva
       connect.query(queryUpdate, valuesUpdate, (err, results) => {
         if (err) {
