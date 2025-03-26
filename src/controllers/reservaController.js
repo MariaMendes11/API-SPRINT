@@ -1,15 +1,22 @@
 // Importa o módulo de conexão com o banco de dados
 const connect = require("../db/connect");
 // Importa a biblioteca moment-timezone para trabalhar com datas e fusos horários
-const moment = require('moment-timezone');
-
+const moment = require("moment-timezone");
+const validateReservas = require("../services/validateReservas");
 
 // Define a classe reservaController que contém os métodos para lidar com as reservas
 module.exports = class reservaController {
   // Método para criar uma nova reserva
   static async createReserva(req, res) {
-    const { fk_id_usuario, fk_id_sala, datahora_inicio, datahora_fim } =
-      req.body;
+    const { fk_id_usuario, fk_id_sala, datahora_inicio, datahora_fim } = req.body;
+
+    console.log("Dados da reserva: ", fk_id_usuario, fk_id_sala, datahora_inicio, datahora_fim);
+    
+
+    const validationError = validateReservas(req.body);
+    if (validationError) {
+      return res.status(400).json(validationError);
+    }
 
     // Verifica se o usuário existe no banco
     const queryUsuario = `SELECT * FROM usuario WHERE id_usuario = ?`;

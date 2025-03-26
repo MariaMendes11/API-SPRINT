@@ -1,9 +1,15 @@
+const validateSalas = require("../services/validateSalas");
 const connect = require("../db/connect"); // Importa o módulo de conexão com o banco de dados
 
 module.exports = class salaController {
   // Método para criar uma nova sala
   static async createSalas(req, res) {
     const { horarios_disponiveis, classificacao, bloco } = req.body;
+
+    const validationError = validateSalas(req.body);
+    if (validationError) {
+      return res.status(400).json(validationError);
+    }
 
     // Query para inserir a nova sala no banco de dados
     const query = `INSERT INTO sala (horarios_disponiveis, classificacao, bloco) VALUES (?, ?, ?)`;
