@@ -1,22 +1,22 @@
+const validateReservas = require("../services/validateReservas");
 // Importa o módulo de conexão com o banco de dados
 const connect = require("../db/connect");
 // Importa a biblioteca moment-timezone para trabalhar com datas e fusos horários
 const moment = require("moment-timezone");
-const validateReservas = require("../services/validateReservas");
 
 // Define a classe reservaController que contém os métodos para lidar com as reservas
 module.exports = class reservaController {
   // Método para criar uma nova reserva
   static async createReserva(req, res) {
-    const { fk_id_usuario, fk_id_sala, datahora_inicio, datahora_fim } = req.body;
-
-    console.log("Dados da reserva: ", fk_id_usuario, fk_id_sala, datahora_inicio, datahora_fim);
-    
+    const { fk_id_usuario, fk_id_sala, datahora_inicio, datahora_fim } =
+      req.body;
 
     const validationError = validateReservas(req.body);
     if (validationError) {
       return res.status(400).json(validationError);
     }
+
+    console.log("AQUI!!!");
 
     // Verifica se o usuário existe no banco
     const queryUsuario = `SELECT * FROM usuario WHERE id_usuario = ?`;
@@ -69,6 +69,37 @@ module.exports = class reservaController {
           // Verifica se a sala foi encontrada
           if (resultadosS.length === 0) {
             return res.status(404).json({ error: "Sala não encontrada" });
+          }
+
+          // Valida se a data de fim é maior que a data de início
+          if (
+            new Date(datahora_fim).getTime() <
+            new Date(datahora_inicio).getTime()
+          ) {
+            return res.status(400).json({ error: "Data ou Hora inválida" });
+          }
+
+          // Valida se a data de fim não é igual à data de início
+          if (
+            new Date(datahora_fim).getTime() ===
+            new Date(datahora_inicio).getTime()
+          ) {
+            return res.status(400).json({ error: "Data ou Hora inválida" });
+          }
+
+          // Define o limite de tempo de reserva para 1 hora
+          const limiteHora = 60 * 60 * 1000; // 1 hora em milissegundos
+          if (new Date(datahora_fim) - new Date(datahora_inicio) > limiteHora) {
+            return res
+              .status(400)
+              .json({ error: "O tempo de reserva excede o limite (1h)" });
+          }
+
+          // Verifica se a sala já está reservada para o horário solicitado
+          if (resultadosH.length > 0) {
+            return res.status(400).json({
+              error: "A sala escolhida já está reservada neste horário",
+            });
           }
 
           // Insere a nova reserva no banco de dados
@@ -133,22 +164,9 @@ module.exports = class reservaController {
     const { datahora_inicio, datahora_fim } = req.body;
     const reservaId = req.params.id; // Recupera o ID da reserva via parâmetros da URL
 
-    // Valida se todos os campos obrigatórios estão preenchidos
-    if (!datahora_inicio || !datahora_fim) {
-      return res
-        .status(400)
-        .json({ error: "Todos os campos devem ser preenchidos" });
-    }
-
-    // Verifica se o horário está entre 07:00 e 21:00
-    const inicioHora = moment(datahora_inicio).tz("America/Sao_Paulo").hour();
-    const fimHora = moment(datahora_fim).tz("America/Sao_Paulo").hour();
-
-    if (inicioHora < 7 || fimHora > 21 || fimHora < 7 || inicioHora > 21) {
-      return res.status(400).json({
-        error:
-          "Atualizações só podem ser feitas para horários entre 07:00 e 21:00.",
-      });
+    const validationError = validateReservas(req.body);
+    if (validationError) {
+      return res.status(400).json(validationError);
     }
 
     // Consulta para verificar se a sala já está reservada no novo horário
@@ -202,6 +220,14 @@ module.exports = class reservaController {
           error:
             "A data e hora de início não podem ser iguais à data e hora de fim.",
         });
+      }
+
+      // Verifica se o tempo de reserva excede 1 hora
+      const limiteHora = 60 * 60 * 1000; // 1 hora em milissegundos
+      if (new Date(datahora_fim) - new Date(datahora_inicio) > limiteHora) {
+        return res
+          .status(400)
+          .json({ error: "O tempo de reserva excede o limite (1h)" });
       }
 
       // Executa a consulta para atualizar a reserva
