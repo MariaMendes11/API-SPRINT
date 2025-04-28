@@ -1,6 +1,7 @@
 const express = require("express"); //Importa o módulo Express
-
-const testConnect = require('./db/testConnect');
+require("dotenv-safe").config();
+const jwt = require("jsonwebtoken");
+const testConnect = require("./db/testConnect");
 
 const cors = require("cors");
 
@@ -20,8 +21,8 @@ class AppController {
   }
 
   routes() {
-    const apiRoutes= require('./routes/apiRoutes')
-    this.express.use('/api/v1/',apiRoutes);// Definição da URL Base
+    const apiRoutes = require("./routes/apiRoutes");
+    this.express.use("/api/v1/", apiRoutes); // Definição da URL Base
   }
 }
 

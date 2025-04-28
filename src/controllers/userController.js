@@ -1,6 +1,8 @@
 const connect = require("../db/connect");
 const validateUser = require("../services/validateUser");
 const validateCpf = require("../services/validateCpf");
+const jwt = require("jsonwebtoken");
+
 
 module.exports = class userController {
   // Função para criação de usuário
@@ -125,26 +127,50 @@ module.exports = class userController {
 
   // Função para login POST
   static async loginUser(req, res) {
-    const { email, senha } = req.body;
-
-    if (!email || !senha) {
-      return res.status(400).json({ error: "Os campos devem ser preenchidos" });
+    const { email, password } = req.body;
+  
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email e senha são obrigatórios" });
     }
-    const query = `SELECT * FROM usuario WHERE email = ? AND senha = ?`;
-    const values = [email, senha];
-
+  
+    const query = `SELECT * FROM usuario WHERE email = ?`;
+  
     try {
-      connect.query(query, values, function (err, results) {
-        if (results.length === 0) {
-          return res.status(404).json({ error: "Email ou senha incorretos" });
+      connect.query(query, [email], (err, results) => {
+        if (err) {
+          console.error("Erro ao executar a consulta:", err);
+          return res.status(500).json({ error: "Erro interno do servidor" });
         }
+  
+        if (results.length === 0) {
+          return res.status(401).json({ error: "Usuário não encontrado" });
+        }
+  
+        const user = results[0];
+  
+        // Verificar se a senha fornecida é a mesma que está no banco de dados
+        // Aqui, você deveria usar bcryptjs para comparar a senha criptografada
+        if (user.senha !== password) {
+          return res.status(401).json({ error: "Senha incorreta" });
+        }
+  
+        // Gerar token JWT
+        const token = jwt.sign({ id: user.id_usuario }, process.env.SECRET, {
+          expiresIn: "1h", // O token expirará após 1 hora
+        });
+  
+        // Remover a senha do objeto de usuário antes de retornar para a resposta
+        delete user.senha;
+  
         return res.status(200).json({
-          message: "Login realizado com sucesso",
+          message: "Login bem-sucedido",
+          user,
+          token, // Retorna o token JWT gerado
         });
       });
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error("Erro ao executar a consulta:", error);
       return res.status(500).json({ error: "Erro interno do servidor" });
     }
   }
-};
+  
