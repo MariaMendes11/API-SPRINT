@@ -57,7 +57,7 @@ module.exports = class salaController {
   // Bloco A
 
   static async getAllSalasA(req, res) {
-    const query = `SELECT classificacao, horarios_disponiveis, bloco FROM sala WHERE bloco = 'A'`;
+    const query = `SELECT id_sala, classificacao, horarios_disponiveis, bloco FROM sala WHERE bloco = 'A'`;
 
     try {
       connect.query(query, function (err, results) {

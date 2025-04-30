@@ -16,8 +16,6 @@ module.exports = class reservaController {
       return res.status(400).json(validationError);
     }
 
-    console.log("AQUI!!!");
-
     // Verifica se o usuário existe no banco
     const queryUsuario = `SELECT * FROM usuario WHERE id_usuario = ?`;
     const valuesUsuario = [fk_id_usuario];
