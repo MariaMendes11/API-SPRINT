@@ -128,7 +128,11 @@ module.exports = class reservaController {
 
   // Método para obter todas as reservas
   static async getAllReserva(req, res) {
-    const query = `SELECT * FROM reserva`;
+    const query = `
+        SELECT reserva.*, usuario.nome 
+        FROM reserva 
+        JOIN usuario ON reserva.fk_id_usuario = usuario.id_usuario
+    `;
 
     // Executa a consulta para obter todas as reservas
     connect.query(query, (err, results) => {
@@ -317,6 +321,49 @@ module.exports = class reservaController {
 
       // Retorna as reservas encontradas
       return res.status(200).json({ message: "Reservas do usuário", reservas });
+    });
+  }
+
+  // consultar reservas por id de sala e data
+  static async getReservaIdData(req, res) {
+
+    const { fk_id_sala, datahora_inicio } = req.body;
+
+    const query = `
+        SELECT r.*, usuario.nome 
+        FROM reserva r
+        JOIN usuario ON r.fk_id_usuario = usuario.id_usuario
+        where r.fk_id_sala = ? and DATE(r.datahora_inicio) = ?
+    `;
+
+    const values = [fk_id_sala, datahora_inicio];
+
+    console.log("body: ", values)
+
+    // Executa a consulta para obter todas as reservas
+    connect.query(query, values, (err, results) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ error: "Erro Interno do Servidor" });
+      }
+
+      // Converte as datas para o fuso horário local antes de enviar a resposta
+      const reserva = results.map((reserva) => ({
+        ...reserva,
+        datahora_inicio: moment
+          .utc(reserva.datahora_inicio)
+          .tz("America/Sao_Paulo")
+          .format("YYYY-MM-DD HH:mm:ss"),
+        datahora_fim: moment
+          .utc(reserva.datahora_fim)
+          .tz("America/Sao_Paulo")
+          .format("YYYY-MM-DD HH:mm:ss"),
+      }));
+
+      // Retorna todas as reservas com as datas ajustadas
+      return res
+        .status(200)
+        .json({ message: "Obtendo todas as reservas", reservas: reserva });
     });
   }
 };

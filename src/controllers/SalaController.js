@@ -78,7 +78,7 @@ module.exports = class salaController {
   // Bloco B
 
   static async getAllSalasB(req, res) {
-    const query = `SELECT classificacao, horarios_disponiveis, bloco FROM sala WHERE bloco = 'B'`;
+    const query = `SELECT id_sala, classificacao, horarios_disponiveis, bloco FROM sala WHERE bloco = 'B'`;
 
     try {
       connect.query(query, function (err, results) {
@@ -99,7 +99,7 @@ module.exports = class salaController {
   // Bloco C
 
   static async getAllSalasC(req, res) {
-    const query = `SELECT classificacao, horarios_disponiveis, bloco FROM sala WHERE bloco = 'C'`;
+    const query = `SELECT id_sala, classificacao, horarios_disponiveis, bloco FROM sala WHERE bloco = 'C'`;
 
     try {
       connect.query(query, function (err, results) {
@@ -120,7 +120,7 @@ module.exports = class salaController {
   // Bloco D
 
   static async getAllSalasD(req, res) {
-    const query = `SELECT classificacao, horarios_disponiveis, bloco FROM sala WHERE bloco = 'D'`;
+    const query = `SELECT id_sala, classificacao, horarios_disponiveis, bloco FROM sala WHERE bloco = 'D'`;
 
     try {
       connect.query(query, function (err, results) {

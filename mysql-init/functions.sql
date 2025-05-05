@@ -17,4 +17,6 @@ END$$
 
 DELIMITER ;
 
-SHOW CREATE FUNCTION total_reservas_usuario;
+
+
+SELECT total_reservas_usuario(5);

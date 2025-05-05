@@ -30,12 +30,13 @@ CREATE TABLE `reserva` (
   `fk_id_sala` int NOT NULL,
   `datahora_inicio` datetime NOT NULL,
   `datahora_fim` datetime NOT NULL,
+  `status` enum('ativa','cancelada') DEFAULT 'ativa',
   PRIMARY KEY (`id_reserva`),
   KEY `fk_id_sala` (`fk_id_sala`),
   KEY `fk_id_usuario` (`fk_id_usuario`),
   CONSTRAINT `reserva_ibfk_1` FOREIGN KEY (`fk_id_sala`) REFERENCES `sala` (`id_sala`),
   CONSTRAINT `reserva_ibfk_2` FOREIGN KEY (`fk_id_usuario`) REFERENCES `usuario` (`id_usuario`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -44,7 +45,38 @@ CREATE TABLE `reserva` (
 
 LOCK TABLES `reserva` WRITE;
 /*!40000 ALTER TABLE `reserva` DISABLE KEYS */;
+INSERT INTO `reserva` VALUES (11,4,10,'2025-06-11 07:00:00','2025-06-11 08:00:00','ativa'),(12,4,7,'2025-05-05 10:00:00','2025-05-05 11:00:00','ativa'),(13,4,2,'2025-09-09 12:00:00','2025-09-09 13:00:00','ativa'),(14,4,2,'2025-09-10 11:00:00','2025-09-10 12:00:00','ativa'),(17,2,25,'2025-09-09 13:00:00','2025-09-09 14:00:00','ativa');
 /*!40000 ALTER TABLE `reserva` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `reserva_cancelada`
+--
+
+DROP TABLE IF EXISTS `reserva_cancelada`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `reserva_cancelada` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `id_reserva` int NOT NULL,
+  `fk_id_usuario` int NOT NULL,
+  `fk_id_sala` int NOT NULL,
+  `data_reserva` date NOT NULL,
+  `created_at` datetime DEFAULT NULL,
+  `cancelada_em` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `motivo_cancelamento` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `reserva_cancelada`
+--
+
+LOCK TABLES `reserva_cancelada` WRITE;
+/*!40000 ALTER TABLE `reserva_cancelada` DISABLE KEYS */;
+INSERT INTO `reserva_cancelada` VALUES (1,15,4,3,'2025-09-04','2025-09-04 14:00:00','2025-05-05 10:52:12',NULL),(2,16,4,10,'2025-09-09','2025-09-09 13:00:00','2025-05-05 11:04:27','Problema com a disponibilidade da sala');
+/*!40000 ALTER TABLE `reserva_cancelada` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -70,7 +102,7 @@ CREATE TABLE `sala` (
 
 LOCK TABLES `sala` WRITE;
 /*!40000 ALTER TABLE `sala` DISABLE KEYS */;
-INSERT INTO `sala` VALUES (1,'Alta Mogiana Almoxarife','Segunda a sexta-feira, das 8h às 17h','A'),(2,'Alta Mogiana Automotiva','Segunda a sexta-feira, das 8h às 17h','A'),(3,'Alta Mogiana Desenvolvimento de Sistema','Segunda a sexta-feira, das 8h às 17h','A'),(4,'Alta Mogiana Eletroeletrônica','Segunda a sexta-feira, das 8h às 17h','A'),(5,'Alta Mogiana Manutenção','Segunda a sexta-feira, das 8h às 17h','A'),(6,'A1 - CONVERSORES','Segunda a sexta-feira, das 8h às 17h','A'),(7,'A2 - ELETRÔNICA','Segunda a sexta-feira, das 8h às 17h','A'),(8,'A3 - CLP','Segunda a sexta-feira, das 8h às 17h','A'),(9,'A4 - AUTOMAÇÃO','Segunda a sexta-feira, das 8h às 17h','A'),(10,'A5 - METROLOGIA','Segunda a sexta-feira, das 8h às 17h','A'),(11,'A6 - PNEUMÁTICA/HIDRÁULICA','Segunda a sexta-feira, das 8h às 17h','A'),(12,'B2 - SALA DE AULA','Segunda a sexta-feira, das 8h às 17h','B'),(13,'B3 - SALA DE AULA','Segunda a sexta-feira, das 8h às 17h','B'),(14,'B5 - SALA DE AULA','Segunda a sexta-feira, das 8h às 17h','B'),(15,'B6 - SALA DE AULA','Segunda a sexta-feira, das 8h às 17h','B'),(16,'B7 - SALA DE AULA','Segunda a sexta-feira, das 8h às 17h','B'),(17,'B8 - LAB. INFORMÁTICA','Segunda a sexta-feira, das 8h às 17h','B'),(18,'B9 - LAB. INFORMÁTICA','Segunda a sexta-feira, das 8h às 17h','B'),(19,'B10 - LAB. INFORMÁTICA','Segunda a sexta-feira, das 8h às 17h','B'),(20,'B11 - LAB. INFORMÁTICA','Segunda a sexta-feira, das 8h às 17h','B'),(21,'B12 - LAB. INFORMÁTICA','Segunda a sexta-feira, das 8h às 17h','B'),(22,'Colorado A1','Segunda a sexta-feira, das 8h às 17h','C'),(23,'Colorado Oficina','Segunda a sexta-feira, das 8h às 17h','C'),(24,'C1 - SALA DE AULA (ALP)','Segunda a sexta-feira, das 8h às 17h','C'),(25,'C2 - LAB. DE INFORMÁTICA','Segunda a sexta-feira, das 8h às 17h','C'),(26,'C3 - SALA DE MODELAGEM VESTUÁRIO','Segunda a sexta-feira, das 8h às 17h','C'),(27,'C4 - SALA DE MODELAGEM VESTUÁRIO','Segunda a sexta-feira, das 8h às 17h','C'),(28,'C5 - SALA DE AULA','Segunda a sexta-feira, das 8h às 17h','C'),(29,'D1 - SALA MODELAGEM','Segunda a sexta-feira, das 8h às 17h','D'),(30,'D2 - SALA DE MODELAGEM','Segunda a sexta-feira, das 8h às 17h','D'),(31,'D3 - SALA DE AULA','Segunda a sexta-feira, das 8h às 17h','D'),(32,'D4 - SALA DE CRIAÇÃO','Segunda a sexta-feira, das 8h às 17h','D'),(33,'LAB. ALIMENTOS','Segunda a sexta-feira, das 8h às 17h','Lab'),(34,'OFICINA DE AJUSTAGEM/FRESAGEM','Segunda a sexta-feira, das 8h às 17h','Oficina'),(35,'OFICINA - COMANDOS ELÉTRICOS','Segunda a sexta-feira, das 8h às 17h','Oficina'),(36,'OFICINA DE TORNEARIA','Segunda a sexta-feira, das 8h às 17h','Oficina'),(37,'OFICINA DE SOLDAGEM','Segunda a sexta-feira, das 8h às 17h','Oficina'),(38,'OFICINA DE CNC','Segunda a sexta-feira, das 8h às 17h','Oficina');
+INSERT INTO `sala` VALUES (2,'Alta Mogiana Automotiva','Segunda a sexta-feira, das 8h às 17h','A'),(3,'Alta Mogiana Desenvolvimento de Sistema','Segunda a sexta-feira, das 8h às 17h','A'),(4,'Alta Mogiana Eletroeletrônica','Segunda a sexta-feira, das 8h às 17h','A'),(5,'Alta Mogiana Manutenção','Segunda a sexta-feira, das 8h às 17h','A'),(6,'A1 - CONVERSORES','Segunda a sexta-feira, das 8h às 17h','A'),(7,'A2 - ELETRÔNICA','Segunda a sexta-feira, das 8h às 17h','A'),(8,'A3 - CLP','Segunda a sexta-feira, das 8h às 17h','A'),(9,'A4 - AUTOMAÇÃO','Segunda a sexta-feira, das 8h às 17h','A'),(10,'A5 - METROLOGIA','Segunda a sexta-feira, das 8h às 17h','A'),(11,'A6 - PNEUMÁTICA/HIDRÁULICA','Segunda a sexta-feira, das 8h às 17h','A'),(12,'B2 - SALA DE AULA','Segunda a sexta-feira, das 8h às 17h','B'),(13,'B3 - SALA DE AULA','Segunda a sexta-feira, das 8h às 17h','B'),(14,'B5 - SALA DE AULA','Segunda a sexta-feira, das 8h às 17h','B'),(15,'B6 - SALA DE AULA','Segunda a sexta-feira, das 8h às 17h','B'),(16,'B7 - SALA DE AULA','Segunda a sexta-feira, das 8h às 17h','B'),(17,'B8 - LAB. INFORMÁTICA','Segunda a sexta-feira, das 8h às 17h','B'),(18,'B9 - LAB. INFORMÁTICA','Segunda a sexta-feira, das 8h às 17h','B'),(19,'B10 - LAB. INFORMÁTICA','Segunda a sexta-feira, das 8h às 17h','B'),(20,'B11 - LAB. INFORMÁTICA','Segunda a sexta-feira, das 8h às 17h','B'),(21,'B12 - LAB. INFORMÁTICA','Segunda a sexta-feira, das 8h às 17h','B'),(22,'Colorado A1','Segunda a sexta-feira, das 8h às 17h','C'),(23,'Colorado Oficina','Segunda a sexta-feira, das 8h às 17h','C'),(24,'C1 - SALA DE AULA (ALP)','Segunda a sexta-feira, das 8h às 17h','C'),(25,'C2 - LAB. DE INFORMÁTICA','Segunda a sexta-feira, das 8h às 17h','C'),(26,'C3 - SALA DE MODELAGEM VESTUÁRIO','Segunda a sexta-feira, das 8h às 17h','C'),(27,'C4 - SALA DE MODELAGEM VESTUÁRIO','Segunda a sexta-feira, das 8h às 17h','C'),(28,'C5 - SALA DE AULA','Segunda a sexta-feira, das 8h às 17h','C'),(29,'D1 - SALA MODELAGEM','Segunda a sexta-feira, das 8h às 17h','D'),(30,'D2 - SALA DE MODELAGEM','Segunda a sexta-feira, das 8h às 17h','D'),(31,'D3 - SALA DE AULA','Segunda a sexta-feira, das 8h às 17h','D'),(32,'D4 - SALA DE CRIAÇÃO','Segunda a sexta-feira, das 8h às 17h','D'),(33,'LAB. ALIMENTOS','Segunda a sexta-feira, das 8h às 17h','Lab'),(34,'OFICINA DE AJUSTAGEM/FRESAGEM','Segunda a sexta-feira, das 8h às 17h','Oficina'),(35,'OFICINA - COMANDOS ELÉTRICOS','Segunda a sexta-feira, das 8h às 17h','Oficina'),(36,'OFICINA DE TORNEARIA','Segunda a sexta-feira, das 8h às 17h','Oficina'),(37,'OFICINA DE SOLDAGEM','Segunda a sexta-feira, das 8h às 17h','Oficina'),(38,'OFICINA DE CNC','Segunda a sexta-feira, das 8h às 17h','Oficina');
 /*!40000 ALTER TABLE `sala` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -89,7 +121,7 @@ CREATE TABLE `usuario` (
   `senha` varchar(30) NOT NULL,
   PRIMARY KEY (`id_usuario`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -98,7 +130,7 @@ CREATE TABLE `usuario` (
 
 LOCK TABLES `usuario` WRITE;
 /*!40000 ALTER TABLE `usuario` DISABLE KEYS */;
-INSERT INTO `usuario` VALUES (1,'Clara Pereira','Clara@example.com','45052242875','senha123'),(2,'Maria Mendes','Maria@example.com','44676553870','senha123'),(3,'Yasmin Souza','Yasmin@example.com','44657655841','senha123');
+INSERT INTO `usuario` VALUES (1,'Clara Pereira','Clara@example.com','45052242875','senha123'),(2,'Maria Mendes','Maria@example.com','44676553870','senha123'),(4,'A','A@a','22222222222','a');
 /*!40000 ALTER TABLE `usuario` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -135,7 +167,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 DROP PROCEDURE IF EXISTS `sp_verificar_disponibilidade` */;
+/*!50003 DROP PROCEDURE IF EXISTS `cancelar_reserva` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
@@ -145,18 +177,31 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`alunods`@`%` PROCEDURE `sp_verificar_disponibilidade`(
-    IN p_id_sala INT,
-    IN p_inicio DATETIME,
-    IN p_fim DATETIME
+CREATE DEFINER=`alunods`@`%` PROCEDURE `cancelar_reserva`(
+    IN p_id_reserva INT,
+    IN p_motivo_cancelamento VARCHAR(255)
 )
 BEGIN
-    SELECT COUNT(*) AS reservas_em_conflito
+    DECLARE v_fk_id_usuario INT;
+    DECLARE v_fk_id_sala INT;
+    DECLARE v_data_reserva DATE;
+    DECLARE v_created_at DATETIME;
+
+    -- Buscar os dados da reserva
+    SELECT fk_id_usuario, fk_id_sala, DATE(datahora_inicio), datahora_inicio
+    INTO v_fk_id_usuario, v_fk_id_sala, v_data_reserva, v_created_at
     FROM reserva
-    WHERE fk_id_sala = p_id_sala
-      AND (
-        (datahora_inicio < p_fim AND datahora_fim > p_inicio)
-      );
+    WHERE id_reserva = p_id_reserva;
+
+    -- Inserir na tabela de reservas canceladas (com os nomes corretos)
+    INSERT INTO reserva_cancelada (
+        id_reserva, fk_id_usuario, fk_id_sala, data_reserva, created_at, motivo_cancelamento
+    ) VALUES (
+        p_id_reserva, v_fk_id_usuario, v_fk_id_sala, v_data_reserva, v_created_at, p_motivo_cancelamento
+    );
+
+    -- Excluir a reserva original
+    DELETE FROM reserva WHERE id_reserva = p_id_reserva;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -173,4 +218,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-04-30 11:28:02
+-- Dump completed on 2025-05-05 11:13:32
