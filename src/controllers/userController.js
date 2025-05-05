@@ -43,30 +43,27 @@ module.exports = class userController {
 
   // Função para alteração PUT (com validação de token)
   static async updateUser(req, res) {
-    const { id, nome, email, cpf, senha } = req.body;
+    const { nome, email, cpf, senha } = req.body;
+    const id_usuario = req.params.id;
 
-    // Valida o token
-    const token = req.headers["authorization"]?.split(" ")[1];
-    if (!token) {
-      return res.status(403).json({ error: "Token não fornecido" });
+    const validationError = validateUser(req.body);
+    if (validationError) {
+      return res.status(400).json(validationError);
     }
 
+   // Verifica se o usuário está tentando deletar sua própria conta
+   if (Number(id_usuario) !== Number(req.userId)) {
+    console.log("ID da URL:", id_usuario);
+    console.log("ID do token:", req.userId);
+  
+    return res
+      .status(403)
+      .json({ error: "Você só pode editar sua própria conta." });
+  }
+
     try {
-      const decoded = jwt.verify(token, process.env.SECRET);
-      if (decoded.id !== id) {
-        return res
-          .status(403)
-          .json({ error: "Você não pode atualizar outro usuário" });
-      }
-
-      if (!id || !nome || !email || !cpf || !senha) {
-        return res
-          .status(400)
-          .json({ error: "Todos os campos devem ser preenchidos" });
-      }
-
       const query = `UPDATE usuario SET nome=?, email=?, cpf=?, senha=? WHERE id_usuario=?`;
-      const values = [nome, email, cpf, senha, id];
+      const values = [nome, email, cpf, senha, id_usuario]; // incluímos o ID aqui
 
       connect.query(query, values, function (err, results) {
         if (err) {
@@ -96,36 +93,39 @@ module.exports = class userController {
   static async deleteUser(req, res) {
     const usuarioId = req.params.id; // ID vindo da rota (ex: /usuario/:id)
     const userIdFromToken = req.userId; // ID recuperado do token pelo middleware
-  
+
     // Verifica se o usuário está tentando deletar sua própria conta
     if (Number(usuarioId) !== Number(userIdFromToken)) {
       console.log("ID da URL:", usuarioId);
-console.log("ID do token:", userIdFromToken);
+      console.log("ID do token:", userIdFromToken);
 
-      return res.status(403).json({ error: "Você só pode excluir sua própria conta." });
+      return res
+        .status(403)
+        .json({ error: "Você só pode excluir sua própria conta." });
     }
-  
+
     const query = `DELETE FROM usuario WHERE id_usuario = ?`;
-  
+
     try {
       connect.query(query, [usuarioId], (err, results) => {
         if (err) {
           console.error("Erro ao excluir usuário:", err);
           return res.status(500).json({ error: "Erro interno do servidor" });
         }
-  
+
         if (results.affectedRows === 0) {
           return res.status(404).json({ error: "Usuário não encontrado" });
         }
-  
-        return res.status(200).json({ message: "Usuário excluído com sucesso" });
+
+        return res
+          .status(200)
+          .json({ message: "Usuário excluído com sucesso" });
       });
     } catch (error) {
       console.error("Erro na exclusão do usuário:", error);
       return res.status(500).json({ error: "Erro interno do servidor" });
     }
   }
-  
 
   // Função para pegar todos os usuários
   static async getAllUsers(req, res) {

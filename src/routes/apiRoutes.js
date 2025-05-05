@@ -8,7 +8,7 @@ const verifyJWT = require("../services/verifyJWT");
 // Rotas da UserController
 router.post("/user", UserController.createUser); // http://localhost:5000/api/v1/user
 router.post("/userLogin", UserController.loginUser); // http://localhost:5000/api/v1/userLogin
-router.put("/user", UserController.updateUser); // http://localhost:5000/api/v1/user
+router.put("/user/:id",verifyJWT, UserController.updateUser); // http://localhost:5000/api/v1/user/:id
 router.delete("/user/:id", verifyJWT, UserController.deleteUser); // http://localhost:5000/api/v1/user/:id
 router.get("/user", verifyJWT, UserController.getAllUsers); // http://localhost:5000/api/v1/user
 
