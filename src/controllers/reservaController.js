@@ -11,6 +11,26 @@ module.exports = class reservaController {
     const { fk_id_usuario, fk_id_sala, datahora_inicio, datahora_fim } =
       req.body;
 
+    console.log(
+      "-----Chegou do body------: ",
+      fk_id_usuario,
+      fk_id_sala,
+      datahora_inicio,
+      datahora_fim
+    );
+
+    //data recebida no formato ISO 8601 (com "Z" indicando UTC)
+    // Converte para o formato MySQL: "YYYY-MM-DD HH:mm:ss"
+    const datahora_inicio_mysql = moment(datahora_inicio).format(
+      "YYYY-MM-DD HH:mm:ss"
+    );
+    const datahora_fim_mysql = moment(datahora_fim).format(
+      "YYYY-MM-DD HH:mm:ss"
+    );
+
+    console.log("Data e hora de início (MySQL):", datahora_inicio_mysql);
+    console.log("Data e hora de fim (MySQL):", datahora_fim_mysql);
+
     const validationError = validateReservas(req.body);
     if (validationError) {
       return res.status(400).json(validationError);
@@ -33,14 +53,14 @@ module.exports = class reservaController {
     )`;
     const valuesHorario = [
       fk_id_sala,
-      datahora_inicio,
-      datahora_inicio,
-      datahora_inicio,
-      datahora_fim,
-      datahora_inicio,
-      datahora_fim,
-      datahora_inicio,
-      datahora_fim,
+      datahora_inicio_mysql,
+      datahora_inicio_mysql,
+      datahora_inicio_mysql,
+      datahora_fim_mysql,
+      datahora_inicio_mysql,
+      datahora_fim_mysql,
+      datahora_inicio_mysql,
+      datahora_fim_mysql,
     ];
 
     // Verifica se a sala já está reservada e se o usuário e a sala existem
@@ -71,23 +91,23 @@ module.exports = class reservaController {
 
           // Valida se a data de fim é maior que a data de início
           if (
-            new Date(datahora_fim).getTime() <
-            new Date(datahora_inicio).getTime()
+            new Date(datahora_fim_mysql).getTime() <
+            new Date(datahora_inicio_mysql).getTime()
           ) {
             return res.status(400).json({ error: "Data ou Hora inválida" });
           }
 
           // Valida se a data de fim não é igual à data de início
           if (
-            new Date(datahora_fim).getTime() ===
-            new Date(datahora_inicio).getTime()
+            new Date(datahora_fim_mysql).getTime() ===
+            new Date(datahora_inicio_mysql).getTime()
           ) {
             return res.status(400).json({ error: "Data ou Hora inválida" });
           }
 
           // Define o limite de tempo de reserva para 1 hora
           const limiteHora = 60 * 60 * 1000; // 1 hora em milissegundos
-          if (new Date(datahora_fim) - new Date(datahora_inicio) > limiteHora) {
+          if (new Date(datahora_fim_mysql) - new Date(datahora_inicio_mysql) > limiteHora) {
             return res
               .status(400)
               .json({ error: "O tempo de reserva excede o limite (1h)" });
@@ -105,8 +125,8 @@ module.exports = class reservaController {
           const valuesInsert = [
             fk_id_usuario,
             fk_id_sala,
-            datahora_inicio,
-            datahora_fim,
+            datahora_inicio_mysql,
+            datahora_fim_mysql,
           ];
 
           // Executa a consulta para inserir a reserva
@@ -326,7 +346,6 @@ module.exports = class reservaController {
 
   // consultar reservas por id de sala e data
   static async getReservaIdData(req, res) {
-
     const { fk_id_sala, datahora_inicio } = req.body;
 
     const query = `
@@ -338,7 +357,7 @@ module.exports = class reservaController {
 
     const values = [fk_id_sala, datahora_inicio];
 
-    console.log("body: ", values)
+    console.log("body: ", values);
 
     // Executa a consulta para obter todas as reservas
     connect.query(query, values, (err, results) => {
