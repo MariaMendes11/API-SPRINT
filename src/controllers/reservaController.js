@@ -181,6 +181,51 @@ module.exports = class reservaController {
     });
   }
 
+  // Método para obter as reservas de um usuário específico
+  static async getReservaByUsuario(req, res) {
+    const usuarioId = req.params.id; // Recupera o ID do usuário via parâmetro da URL
+
+    // Verifica se o ID do usuário foi fornecido
+    if (!usuarioId) {
+      return res.status(400).json({ error: "ID do usuário é obrigatório" });
+    }
+
+    // Consulta para obter as reservas do usuário
+    const query = `SELECT * FROM reserva WHERE fk_id_usuario = ?`;
+    const values = [usuarioId];
+
+    // Executa a consulta para buscar as reservas do usuário
+    connect.query(query, values, (err, results) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ error: "Erro ao buscar reservas" });
+      }
+
+      // Se não houver reservas, retorna um erro
+      if (results.length === 0) {
+        return res
+          .status(404)
+          .json({ error: "Nenhuma reserva encontrada para esse usuário" });
+      }
+
+      // Converte as datas para o fuso horário local antes de enviar a resposta
+      const reservas = results.map((reserva) => ({
+        ...reserva,
+        datahora_inicio: moment
+          .utc(reserva.datahora_inicio)
+          .tz("America/Sao_Paulo")
+          .format("YYYY-MM-DD HH:mm:ss"),
+        datahora_fim: moment
+          .utc(reserva.datahora_fim)
+          .tz("America/Sao_Paulo")
+          .format("YYYY-MM-DD HH:mm:ss"),
+      }));
+
+      // Retorna as reservas encontradas
+      return res.status(200).json({ message: "Reservas do usuário", reservas });
+    });
+  }
+
   // Método para atualizar uma reserva
   static async updateReserva(req, res) {
     const { datahora_inicio, datahora_fim } = req.body;
