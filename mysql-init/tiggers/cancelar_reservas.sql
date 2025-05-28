@@ -34,9 +34,18 @@ DELIMITER ;
 
 -- 1. Defina o motivo do cancelamento na linha da reserva:
 UPDATE reserva
-SET motivo_cancelamento = 'Problema com a disponibilidade da sala'
-WHERE id_reserva = 17;
+SET motivo_cancelamento = 'Não quero mais reservar neste dia'
+WHERE id_reserva = 13;
 
 -- 2. Cancele a reserva (isso dispara a trigger):
 DELETE FROM reserva
-WHERE id_reserva = 17;
+WHERE id_reserva = 13;
+
+
+ALTER TABLE reserva ADD COLUMN motivo_cancelamento VARCHAR(255);
+
+
+SELECT * FROM reserva_cancelada WHERE id_reserva = 10;
+
+
+CALL cancelar_reserva(17, 'Não quero mais reservar neste dia');

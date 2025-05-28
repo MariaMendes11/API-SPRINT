@@ -45,49 +45,64 @@ module.exports = class userController {
   static async updateUser(req, res) {
     const { nome, email, cpf, senha } = req.body;
     const id_usuario = req.params.id;
-
-    const validationError = validateUser(req.body);
-    if (validationError) {
-      return res.status(400).json(validationError);
-    }
-
-   // Verifica se o usuário está tentando deletar sua própria conta
-   if (Number(id_usuario) !== Number(req.userId)) {
-    console.log("ID da URL:", id_usuario);
-    console.log("ID do token:", req.userId);
   
-    return res
-      .status(403)
-      .json({ error: "Você só pode editar sua própria conta." });
-  }
-
+    // Verifica se o usuário está tentando editar a própria conta
+    if (Number(id_usuario) !== Number(req.userId)) {
+      return res
+        .status(403)
+        .json({ error: "Você só pode editar sua própria conta." });
+    }
+  
     try {
-      const query = `UPDATE usuario SET nome=?, email=?, cpf=?, senha=? WHERE id_usuario=?`;
-      const values = [nome, email, cpf, senha, id_usuario]; // incluímos o ID aqui
-
-      connect.query(query, values, function (err, results) {
+      // Busca o CPF original no banco antes de validar
+      const selectQuery = "SELECT cpf FROM usuario WHERE id_usuario = ?";
+      connect.query(selectQuery, [id_usuario], function (err, results) {
         if (err) {
-          if (err.code === "ER_DUP_ENTRY") {
-            return res.status(400).json({
-              error: "Email já está cadastrado por outro usuário",
-            });
-          } else {
-            console.error(err);
-            return res.status(500).json({ error: "Erro interno do servidor" });
-          }
+          console.error(err);
+          return res.status(500).json({ error: "Erro ao buscar o usuário" });
         }
-        if (results.affectedRows === 0) {
+  
+        if (results.length === 0) {
           return res.status(404).json({ error: "Usuário não encontrado" });
         }
-        return res
-          .status(200)
-          .json({ message: "Usuário atualizado com sucesso" });
+  
+        const cpfOriginal = results[0].cpf;
+  
+        // Valida os dados, incluindo a verificação de CPF imutável
+        const validationError = validateUser({ nome, email, cpf, senha, cpfOriginal });
+        if (validationError) {
+          return res.status(400).json(validationError);
+        }
+  
+        // Continua com o update se passou na validação
+        const updateQuery = `UPDATE usuario SET nome=?, email=?, senha=? WHERE id_usuario=?`;
+        const values = [nome, email, senha, id_usuario]; // Remove o CPF do update
+  
+        connect.query(updateQuery, values, function (err, results) {
+          if (err) {
+            if (err.code === "ER_DUP_ENTRY") {
+              return res.status(400).json({
+                error: "Email já está cadastrado por outro usuário",
+              });
+            } else {
+              console.error(err);
+              return res.status(500).json({ error: "Erro interno do servidor" });
+            }
+          }
+          if (results.affectedRows === 0) {
+            return res.status(404).json({ error: "Usuário não encontrado" });
+          }
+          return res
+            .status(200)
+            .json({ message: "Usuário atualizado com sucesso" });
+        });
       });
     } catch (error) {
       console.error("Erro ao executar consulta", error);
       return res.status(500).json({ error: "Erro interno do servidor" });
     }
   }
+  
 
   // Função para exclusão DELETE (com validação de token)
   static async deleteUser(req, res) {

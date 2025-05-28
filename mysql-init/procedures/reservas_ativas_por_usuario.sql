@@ -20,3 +20,5 @@ DELIMITER ;
 
 --Mostrar todas as reservas futuras do usuário com ID
 CALL reservas_ativas_por_usuario(3);
+
+
