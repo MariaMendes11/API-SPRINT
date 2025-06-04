@@ -1,6 +1,5 @@
-CREATE DATABASE  IF NOT EXISTS `banco_salas` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `banco_salas`;
-
+-- CREATE DATABASE  IF NOT EXISTS `banco_salas` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+-- USE `banco_salas`;
 -- MySQL dump 10.13  Distrib 8.0.36, for Win64 (x86_64)
 --
 -- Host: localhost    Database: banco_salas
@@ -32,12 +31,13 @@ CREATE TABLE `reserva` (
   `datahora_inicio` datetime NOT NULL,
   `datahora_fim` datetime NOT NULL,
   `status` enum('ativa','cancelada') DEFAULT 'ativa',
+  `motivo_cancelamento` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id_reserva`),
   KEY `fk_id_sala` (`fk_id_sala`),
   KEY `fk_id_usuario` (`fk_id_usuario`),
   CONSTRAINT `reserva_ibfk_1` FOREIGN KEY (`fk_id_sala`) REFERENCES `sala` (`id_sala`),
   CONSTRAINT `reserva_ibfk_2` FOREIGN KEY (`fk_id_usuario`) REFERENCES `usuario` (`id_usuario`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -46,9 +46,47 @@ CREATE TABLE `reserva` (
 
 LOCK TABLES `reserva` WRITE;
 /*!40000 ALTER TABLE `reserva` DISABLE KEYS */;
-INSERT INTO `reserva` VALUES (11,4,10,'2025-06-11 07:00:00','2025-06-11 08:00:00','ativa'),(12,4,7,'2025-05-05 10:00:00','2025-05-05 11:00:00','ativa'),(13,4,2,'2025-09-09 12:00:00','2025-09-09 13:00:00','ativa'),(14,4,2,'2025-09-10 11:00:00','2025-09-10 12:00:00','ativa'),(17,2,25,'2025-09-09 13:00:00','2025-09-09 14:00:00','ativa');
+INSERT INTO `reserva` VALUES (14,4,2,'2025-09-10 11:00:00','2025-09-10 12:00:00','ativa',NULL),(18,4,13,'2025-06-26 09:00:00','2025-06-26 10:00:00','ativa',NULL);
 /*!40000 ALTER TABLE `reserva` ENABLE KEYS */;
 UNLOCK TABLES;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_before_cancelar_reserva` BEFORE DELETE ON `reserva` FOR EACH ROW BEGIN
+    DECLARE v_data_reserva DATE;
+
+    -- Extrair a data da datahora_inicio
+    SET v_data_reserva = DATE(OLD.datahora_inicio);
+
+    -- Inserir os dados na tabela de reservas canceladas
+    INSERT INTO reserva_cancelada (
+        id_reserva,
+        fk_id_usuario,
+        fk_id_sala,
+        data_reserva,
+        created_at,
+        motivo_cancelamento
+    )
+    VALUES (
+        OLD.id_reserva,
+        OLD.fk_id_usuario,
+        OLD.fk_id_sala,
+        v_data_reserva,
+        OLD.datahora_inicio,
+        OLD.motivo_cancelamento
+    );
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Table structure for table `reserva_cancelada`
@@ -67,7 +105,7 @@ CREATE TABLE `reserva_cancelada` (
   `cancelada_em` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `motivo_cancelamento` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -76,7 +114,7 @@ CREATE TABLE `reserva_cancelada` (
 
 LOCK TABLES `reserva_cancelada` WRITE;
 /*!40000 ALTER TABLE `reserva_cancelada` DISABLE KEYS */;
-INSERT INTO `reserva_cancelada` VALUES (1,15,4,3,'2025-09-04','2025-09-04 14:00:00','2025-05-05 10:52:12',NULL),(2,16,4,10,'2025-09-09','2025-09-09 13:00:00','2025-05-05 11:04:27','Problema com a disponibilidade da sala');
+INSERT INTO `reserva_cancelada` VALUES (1,15,4,3,'2025-09-04','2025-09-04 14:00:00','2025-05-05 10:52:12',NULL),(2,16,4,10,'2025-09-09','2025-09-09 13:00:00','2025-05-05 11:04:27','Problema com a disponibilidade da sala'),(3,17,2,25,'2025-09-09','2025-09-09 13:00:00','2025-06-04 08:21:05','Não quero mais reservar neste dia');
 /*!40000 ALTER TABLE `reserva_cancelada` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -152,7 +190,7 @@ UNLOCK TABLES;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`alunods`@`%` FUNCTION `total_reservas_usuario`(p_id_usuario INT) RETURNS int
+CREATE  `total_reservas_usuario`(p_id_usuario INT) RETURNS int
     DETERMINISTIC
 BEGIN
     DECLARE total INT;
@@ -178,7 +216,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`alunods`@`%` PROCEDURE `cancelar_reserva`(
+CREATE PROCEDURE `cancelar_reserva`(
     IN p_id_reserva INT,
     IN p_motivo_cancelamento VARCHAR(255)
 )
@@ -219,5 +257,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-05 11:13:32
-
+-- Dump completed on 2025-06-04  9:02:16

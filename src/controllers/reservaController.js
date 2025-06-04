@@ -11,6 +11,14 @@ module.exports = class reservaController {
     const { fk_id_usuario, fk_id_sala, datahora_inicio, datahora_fim } =
       req.body;
 
+      // Validação do formato ISO 8601 das datas
+  if (
+    !moment(datahora_inicio, moment.ISO_8601, true).isValid() ||
+    !moment(datahora_fim, moment.ISO_8601, true).isValid()
+  ) {
+    return res.status(400).json({ error: "Formato de data inválido" });
+  }
+
     console.log(
       "-----Chegou do body------: ",
       fk_id_usuario,
@@ -107,7 +115,10 @@ module.exports = class reservaController {
 
           // Define o limite de tempo de reserva para 1 hora
           const limiteHora = 60 * 60 * 1000; // 1 hora em milissegundos
-          if (new Date(datahora_fim_mysql) - new Date(datahora_inicio_mysql) > limiteHora) {
+          if (
+            new Date(datahora_fim_mysql) - new Date(datahora_inicio_mysql) >
+            limiteHora
+          ) {
             return res
               .status(400)
               .json({ error: "O tempo de reserva excede o limite (1h)" });
@@ -183,6 +194,7 @@ module.exports = class reservaController {
 
   // Método para obter as reservas de um usuário específico
   static async getReservaByUsuario(req, res) {
+    
     const usuarioId = req.params.id; // Recupera o ID do usuário via parâmetro da URL
 
     // Verifica se o ID do usuário foi fornecido
@@ -191,7 +203,11 @@ module.exports = class reservaController {
     }
 
     // Consulta para obter as reservas do usuário
-    const query = `SELECT * FROM reserva WHERE fk_id_usuario = ?`;
+    const query = `
+    SELECT r.*, s.classificacao, s.horarios_disponiveis, s.bloco
+    FROM reserva r
+    JOIN sala s ON r.fk_id_sala = s.id_sala
+    WHERE r.fk_id_usuario = ?`;
     const values = [usuarioId];
 
     // Executa a consulta para buscar as reservas do usuário
@@ -200,14 +216,14 @@ module.exports = class reservaController {
         console.error(err);
         return res.status(500).json({ error: "Erro ao buscar reservas" });
       }
-
+      console.log(results)
       // Se não houver reservas, retorna um erro
       if (results.length === 0) {
         return res
           .status(404)
           .json({ error: "Nenhuma reserva encontrada para esse usuário" });
       }
-
+      
       // Converte as datas para o fuso horário local antes de enviar a resposta
       const reservas = results.map((reserva) => ({
         ...reserva,
@@ -230,6 +246,14 @@ module.exports = class reservaController {
   static async updateReserva(req, res) {
     const { datahora_inicio, datahora_fim } = req.body;
     const reservaId = req.params.id; // Recupera o ID da reserva via parâmetros da URL
+
+    // Validação do formato ISO 8601 das datas
+  if (
+    !moment(datahora_inicio, moment.ISO_8601, true).isValid() ||
+    !moment(datahora_fim, moment.ISO_8601, true).isValid()
+  ) {
+    return res.status(400).json({ error: "Formato de data inválido" });
+  }
 
     const validationError = validateReservas(req.body);
     if (validationError) {
@@ -344,51 +368,7 @@ module.exports = class reservaController {
     });
   }
 
-  // Método para obter as reservas de um usuário específico
-  static async getReservaByUsuario(req, res) {
-    const usuarioId = req.params.id; // Recupera o ID do usuário via parâmetro da URL
-
-    // Verifica se o ID do usuário foi fornecido
-    if (!usuarioId) {
-      return res.status(400).json({ error: "ID do usuário é obrigatório" });
-    }
-
-    // Consulta para obter as reservas do usuário
-    const query = `SELECT * FROM reserva WHERE fk_id_usuario = ?`;
-    const values = [usuarioId];
-
-    // Executa a consulta para buscar as reservas do usuário
-    connect.query(query, values, (err, results) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ error: "Erro ao buscar reservas" });
-      }
-
-      // Se não houver reservas, retorna um erro
-      if (results.length === 0) {
-        return res
-          .status(404)
-          .json({ error: "Nenhuma reserva encontrada para esse usuário" });
-      }
-
-      // Converte as datas para o fuso horário local antes de enviar a resposta
-      const reservas = results.map((reserva) => ({
-        ...reserva,
-        datahora_inicio: moment
-          .utc(reserva.datahora_inicio)
-          .tz("America/Sao_Paulo")
-          .format("YYYY-MM-DD HH:mm:ss"),
-        datahora_fim: moment
-          .utc(reserva.datahora_fim)
-          .tz("America/Sao_Paulo")
-          .format("YYYY-MM-DD HH:mm:ss"),
-      }));
-
-      // Retorna as reservas encontradas
-      return res.status(200).json({ message: "Reservas do usuário", reservas });
-    });
-  }
-
+  
   // consultar reservas por id de sala e data
   static async getReservaIdData(req, res) {
     const { fk_id_sala, datahora_inicio } = req.body;
