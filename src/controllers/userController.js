@@ -2,6 +2,8 @@ const connect = require("../db/connect");
 const validateUser = require("../services/validateUser");
 const validateCpf = require("../services/validateCpf");
 const jwt = require("jsonwebtoken"); // Importar
+const bcrypt = require("bcrypt");
+const SALT_ROUNDS = 10;
 
 module.exports = class userController {
   // Função para criação de usuário
@@ -19,15 +21,18 @@ module.exports = class userController {
         return res.status(400).json(cpfError);
       }
 
-      // Construção da query INSERT
-      const query = `INSERT INTO usuario (nome, email, cpf, senha) VALUES ('${nome}', '${email}', '${cpf}', '${senha}')`;
-      connect.query(query, function (err, results) {
+      const hashedPassword = await bcrypt.hash(senha, SALT_ROUNDS);
+
+      const query = `INSERT INTO usuario (nome, email, cpf, senha) VALUES (?, ?, ?, ?)`;
+      const values = [nome, email, cpf, hashedPassword];
+
+      connect.query(query, values, function (err, results) {
         if (err) {
           console.log(err);
           if (err.code === "ER_DUP_ENTRY") {
-            return res
-              .status(400)
-              .json({ error: "O email já está vinculado a outro usuário" });
+            return res.status(400).json({
+              error: "O email já está vinculado a outro usuário",
+            });
           }
         } else {
           return res
@@ -45,14 +50,14 @@ module.exports = class userController {
   static async updateUser(req, res) {
     const { nome, email, cpf, senha } = req.body;
     const id_usuario = req.params.id;
-  
+
     // Verifica se o usuário está tentando editar a própria conta
     if (Number(id_usuario) !== Number(req.userId)) {
       return res
         .status(403)
         .json({ error: "Você só pode editar sua própria conta." });
     }
-  
+
     try {
       // Busca o CPF original no banco antes de validar
       const selectQuery = "SELECT cpf FROM usuario WHERE id_usuario = ?";
@@ -61,23 +66,29 @@ module.exports = class userController {
           console.error(err);
           return res.status(500).json({ error: "Erro ao buscar o usuário" });
         }
-  
+
         if (results.length === 0) {
           return res.status(404).json({ error: "Usuário não encontrado" });
         }
-  
+
         const cpfOriginal = results[0].cpf;
-  
+
         // Valida os dados, incluindo a verificação de CPF imutável
-        const validationError = validateUser({ nome, email, cpf, senha, cpfOriginal });
+        const validationError = validateUser({
+          nome,
+          email,
+          cpf,
+          senha,
+          cpfOriginal,
+        });
         if (validationError) {
           return res.status(400).json(validationError);
         }
-  
+
         // Continua com o update se passou na validação
-        const updateQuery = `UPDATE usuario SET nome=?, email=?, senha=? WHERE id_usuario=?`;
-        const values = [nome, email, senha, id_usuario]; // Remove o CPF do update
-  
+        const updateQuery = `UPDATE usuario SET nome=?, email=? WHERE id_usuario=?`;
+        const values = [nome, email, id_usuario]; // Remove o CPF do update
+
         connect.query(updateQuery, values, function (err, results) {
           if (err) {
             if (err.code === "ER_DUP_ENTRY") {
@@ -86,7 +97,9 @@ module.exports = class userController {
               });
             } else {
               console.error(err);
-              return res.status(500).json({ error: "Erro interno do servidor" });
+              return res
+                .status(500)
+                .json({ error: "Erro interno do servidor" });
             }
           }
           if (results.affectedRows === 0) {
@@ -102,7 +115,6 @@ module.exports = class userController {
       return res.status(500).json({ error: "Erro interno do servidor" });
     }
   }
-  
 
   // Função para exclusão DELETE (com validação de token)
   static async deleteUser(req, res) {
@@ -185,7 +197,10 @@ module.exports = class userController {
 
         const user = results[0];
 
-        if (user.senha !== senha) {
+        //Comparar a senha enviada na requisição com o hash do banco
+        const senhaOK = bcrypt.compareSync(senha, user.senha);
+
+        if (!senhaOK) {
           return res.status(401).json({ error: "Senha incorreta" });
         }
 

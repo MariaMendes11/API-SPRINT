@@ -1,5 +1,5 @@
--- CREATE DATABASE  IF NOT EXISTS `banco_salas` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
--- USE `banco_salas`;
+CREATE DATABASE  IF NOT EXISTS `banco_salas` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+USE `banco_salas`;
 -- MySQL dump 10.13  Distrib 8.0.36, for Win64 (x86_64)
 --
 -- Host: localhost    Database: banco_salas
@@ -58,7 +58,7 @@ UNLOCK TABLES;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_before_cancelar_reserva` BEFORE DELETE ON `reserva` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_before_cancelar_reserva` BEFORE DELETE ON `reserva` FOR EACH ROW BEGIN
     DECLARE v_data_reserva DATE;
 
     -- Extrair a data da datahora_inicio
@@ -190,7 +190,7 @@ UNLOCK TABLES;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE function `total_reservas_usuario`(p_id_usuario INT) RETURNS int
+CREATE DEFINER=`root`@`localhost` FUNCTION `total_reservas_usuario`(p_id_usuario INT) RETURNS int
     DETERMINISTIC
 BEGIN
     DECLARE total INT;
@@ -216,7 +216,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE PROCEDURE `cancelar_reserva`(
+CREATE DEFINER=`root`@`localhost` PROCEDURE `cancelar_reserva`(
     IN p_id_reserva INT,
     IN p_motivo_cancelamento VARCHAR(255)
 )
@@ -257,4 +257,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-06-04  9:02:16
+-- Dump completed on 2025-06-09 16:13:17
