@@ -1,7 +1,7 @@
 const connect = require("../db/connect");
 const validateUser = require("../services/validateUser");
 const validateCpf = require("../services/validateCpf");
-const jwt = require("jsonwebtoken"); // Importar
+const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const SALT_ROUNDS = 10;
 
@@ -131,7 +131,7 @@ module.exports = class userController {
         .json({ error: "Você só pode excluir sua própria conta." });
     }
 
-    const query = `DELETE FROM usuario WHERE id_usuario = ?`;
+    const query = `CALL excluir_usuario(?)`;
 
     try {
       connect.query(query, [usuarioId], (err, results) => {
